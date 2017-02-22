@@ -43,12 +43,13 @@ func Example() {
 
 	id, _ := myBMP180.ID()
 	t, _ := myBMP180.Temperature()
-	p, _ := myBMP180.Pressure(3)
-	p0, _ := myBMP180.PressureSealevel(3, 500)
+	pRough, _ := myBMP180.Pressure(0)
+	pAccurate, _ := myBMP180.Pressure(3)
+	pSealevel, _ := myBMP180.PressureSealevel(3, 500)
 
-	fmt.Printf("ID=0x%x t=%.3f°C p=%.3fmbar p0=%.3fmbar\n", id, t, p, p0)
+	fmt.Printf("ID=0x%x,  t=%.3f°C,  pRough=%.3fmbar,  pAccurate=%.3fmbar,  pSealevel=%.3fmbar\n", id, t, pRough, pAccurate, pSealevel)
 
 	// Output:
-	// ID=0x55 t=23.776°C p=980.046mbar p0=1040.241mbar
+	// ID=0x55,  t=23.776°C,  pRough=980.022mbar,  pAccurate=980.046mbar,  pSealevel=1040.241mbar
 	// Closing
 }

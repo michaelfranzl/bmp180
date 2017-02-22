@@ -11,6 +11,7 @@ import (
 	//"bytes"
 	//"encoding/binary"
 	"fmt"
+	//"time"
 	//"math"
 	//"math/rand"
 )
@@ -70,18 +71,23 @@ func (d *BMP180StubDevice) ReadReg(reg byte, buf []byte) error {
 		d.numMeasurements++
 		switch d.regControl {
 		case 0x2E:
+			// Read raw temperature
 			var val []byte
 			if d.numMeasurements < 10 {
+				// make test (calling this only once or twice) get expected value
 				// Raw temperature value taken from http://www.osengr.org/WxShield/Downloads/BMP085-Calcs.pdf
-				val = []byte{0x69, 0xEC} // make test get expected value
+				val = []byte{0x69, 0xEC}
 			} else {
-				// dynamic testing over longer periods.
-				// make the results more interesting
+				// dynamic testing over longer periods to make the results more interesting.
 				val = []byte{0x69, 0xEC}
 			}
 			copy(buf, val)
-		case 0x34, 0x74, 0xb4, 0xf4:
+		case 0x34, 0x74, 0xb4:
+			// Read raw pressure for oversampling settings 0..2
 			// Raw pressure value taken from http://www.osengr.org/WxShield/Downloads/BMP085-Calcs.pdf
+			copy(buf, []byte{0x98, 0x2F})
+		case 0xf4:
+			// Read raw pressure for oversampling setting 3
 			copy(buf, []byte{0x98, 0x2F, 0xC0})
 		default:
 			panic(fmt.Sprintf("Reading from register 0xF6: Control register 0x%x", d.regControl))
