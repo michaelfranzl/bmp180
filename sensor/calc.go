@@ -44,16 +44,16 @@ func calcTempCelsius(tu uint16, cnsts constants) float64 {
 	return t
 }
 
-func calcPressurePascal(temp_celsius float64, msb, lsb, xlsb byte, cnsts constants) float64 {
-	s := temp_celsius - 25
+func calcPressurePascal(tempCelsius float64, msb, lsb, xlsb byte, cnsts constants) float64 {
+	s := tempCelsius - 25
 	x := cnsts.x2*s*s + cnsts.x1*s + cnsts.x0
 	y := cnsts.y2*s*s + cnsts.y1*s + cnsts.y0
 
-	msb_int := uint8(msb)
-	lsb_int := uint8(lsb)
-	xlsb_int := uint8(xlsb)
+	msbInt := uint8(msb)
+	lsbInt := uint8(lsb)
+	xlsbInt := uint8(xlsb)
 
-	pu := float64(msb_int)*256 + float64(lsb_int) + float64(xlsb_int)/256
+	pu := float64(msbInt)*256 + float64(lsbInt) + float64(xlsbInt)/256
 
 	z := (pu - x) / y
 	p := cnsts.p2*z*z + cnsts.p1*z + cnsts.p0

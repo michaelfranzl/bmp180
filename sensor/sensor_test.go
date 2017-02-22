@@ -30,8 +30,8 @@ func Example() {
 	if err != nil {
 		// If no physical sensor available, use a stubbed I2C Device which is
 		// provided in this package.
-		devfs_stub := i2c_stub.Devfs{Dev: "/dev/i2c-1"}
-		i2cDevice, err = i2c_stub.Open(&devfs_stub, 0x77)
+		devfsStub := i2cStub.Devfs{Dev: "/dev/i2c-1"}
+		i2cDevice, err = i2cStub.Open(&devfsStub, 0x77)
 	}
 
 	defer func() {

@@ -5,7 +5,6 @@
 // Package sensor (part of project bmp180) provides an interface to the BMP180
 // family of environmental (temperature, pressure) sensors attached to an I2C
 // interface.
-
 package sensor
 
 import (
@@ -68,7 +67,7 @@ func NewSensor(device Device) *Sensor {
 	return s
 }
 
-// ID() reads the chip ID from the underlying I2C device. The BMP180 sensor
+// ID reads the chip ID from the underlying I2C device. The BMP180 sensor
 // always returns 0x55. This function can be used to test basic communication.
 func (s *Sensor) ID() (byte, error) {
 	buf := make([]byte, 1, 1)

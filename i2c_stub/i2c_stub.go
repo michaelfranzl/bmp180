@@ -2,35 +2,40 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package i2c_stub (part of project bmp180) provides an emulated BMP180 device
+// Package i2cStub (part of project bmp180) provides an emulated BMP180 device
 // that can be used to test functionality of the 'sensor' package when no
 // physical BMP180 device is attached or available.
-
-package i2c_stub
+package i2cStub
 
 import "fmt"
 
+// Devfs is a stubbed I2C driver.
 type Devfs struct {
 	Dev string
 }
 
-func Open(dev *Devfs, address byte) (*MockDevice, error) {
-	return &MockDevice{}, nil
+// Open returns a pointer to BMP180StubDevice
+func Open(dev *Devfs, address byte) (*BMP180StubDevice, error) {
+	return &BMP180StubDevice{}, nil
 }
 
-type MockDevice struct {
+// BMP180StubDevice represents a stubbed BMP180 I2C device.
+type BMP180StubDevice struct {
 	regControl byte
 }
 
-func (d *MockDevice) Close() error {
+// Close would close the device, but since this is a stub, it does nothing.
+func (d *BMP180StubDevice) Close() error {
 	return nil
 }
 
-func (d *MockDevice) Read(buf []byte) error {
+// Read would read from the device, but since this is a stub, it does nothing.
+func (d *BMP180StubDevice) Read(buf []byte) error {
 	return nil
 }
 
-func (d *MockDevice) ReadReg(reg byte, buf []byte) error {
+// ReadReg emulates reading from known BMP180 registers.
+func (d *BMP180StubDevice) ReadReg(reg byte, buf []byte) error {
 	switch reg {
 	case 0xD0:
 		// This address holds the chip ID. BMP180 chips have ID 0x55.
@@ -38,6 +43,7 @@ func (d *MockDevice) ReadReg(reg byte, buf []byte) error {
 
 	case 0xAA:
 		// This address and the next 21 words hold the chip calibration data
+		// Calibration data taken from http://wmrx00.sourceforge.net/Arduino/BMP085-Calcs.pdf
 		copy(buf, []byte{
 			0x1e, 0xe7, // ac1 = 7911
 			0xfc, 0x5a, // ac2 = -934
@@ -56,10 +62,10 @@ func (d *MockDevice) ReadReg(reg byte, buf []byte) error {
 		// raw temperature or pressure values, depending on what was measured.
 		switch d.regControl {
 		case 0x2E:
-			// temp
+			// Raw temperature value taken from http://wmrx00.sourceforge.net/Arduino/BMP085-Calcs.pdf
 			copy(buf, []byte{0x69, 0xEC})
 		case 0x34, 0x74, 0xb4, 0xf4:
-			// pressure
+			// Raw pressure value taken from http://wmrx00.sourceforge.net/Arduino/BMP085-Calcs.pdf
 			copy(buf, []byte{0x98, 0x2F, 0xC0})
 		default:
 			panic(fmt.Sprintf("Reading from register 0xF6: Control register 0x%x", d.regControl))
@@ -71,11 +77,13 @@ func (d *MockDevice) ReadReg(reg byte, buf []byte) error {
 	return nil
 }
 
-func (d *MockDevice) Write(buf []byte) (err error) {
+// Write would write to the device, but since this is a stub, it does nothing.
+func (d *BMP180StubDevice) Write(buf []byte) (err error) {
 	return nil
 }
 
-func (d *MockDevice) WriteReg(reg byte, buf []byte) (err error) {
+// WriteReg writes data to a device register.
+func (d *BMP180StubDevice) WriteReg(reg byte, buf []byte) (err error) {
 	switch reg {
 	case 0xF4:
 		// Writing to this register either starts a temperature (0x2E)
