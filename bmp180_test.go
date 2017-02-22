@@ -20,7 +20,7 @@ func Example() {
 	)
 
 	// Specify the path to a I2C device node provided by the Linux kernel, e.g. "/dev/i2c-1"
-	// This example uses "/dev/null" so that the i2c_stub device is guaranteed to be used
+	// This example uses "/dev/null" so that the `stub` device is guaranteed to be used
 	// and this test is guarenteed to pass.
 	devfs := i2c.Devfs{Dev: "/dev/null"}
 
@@ -29,7 +29,7 @@ func Example() {
 
 	if err != nil {
 		// If no physical sensor available, use a stubbed I2C Device which is
-		// provided in this package.
+		// provided in this repository.
 		devfsStub := stub.Devfs{Dev: "/dev/i2c-1"}
 		i2cDevice, err = stub.Open(&devfsStub, 0x77)
 	}
