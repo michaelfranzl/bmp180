@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package sensor_test
+package bmp180_test
 
 import (
 	"fmt"
 
-	"github.com/michaelfranzl/bmp180/i2c_stub"
-	"github.com/michaelfranzl/bmp180/sensor"
+	"github.com/michaelfranzl/bmp180"
+	"github.com/michaelfranzl/bmp180/stub"
 	"golang.org/x/exp/io/i2c"
 )
 
@@ -16,7 +16,7 @@ import (
 func Example() {
 	var (
 		err       error
-		i2cDevice sensor.Device
+		i2cDevice bmp180.Device
 	)
 
 	// Specify the path to a I2C device node provided by the Linux kernel, e.g. "/dev/i2c-1"
@@ -30,8 +30,8 @@ func Example() {
 	if err != nil {
 		// If no physical sensor available, use a stubbed I2C Device which is
 		// provided in this package.
-		devfsStub := i2cStub.Devfs{Dev: "/dev/i2c-1"}
-		i2cDevice, err = i2cStub.Open(&devfsStub, 0x77)
+		devfsStub := stub.Devfs{Dev: "/dev/i2c-1"}
+		i2cDevice, err = stub.Open(&devfsStub, 0x77)
 	}
 
 	defer func() {
@@ -39,7 +39,7 @@ func Example() {
 		i2cDevice.Close()
 	}()
 
-	myBMP180 := sensor.NewSensor(i2cDevice)
+	myBMP180 := bmp180.NewSensor(i2cDevice)
 
 	id, _ := myBMP180.ID()
 	t, _ := myBMP180.Temperature()

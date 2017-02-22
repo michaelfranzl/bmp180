@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package sensor (part of project bmp180) provides an interface to the BMP180
-// family of environmental (temperature, pressure) sensors attached to an I2C
-// interface.
-package sensor
+// Package bmp180 provides an interface to the BMP180 family of environmental
+// (temperature, pressure) sensors attached to an I2C interface.
+package bmp180
 
 import (
 	"bytes"

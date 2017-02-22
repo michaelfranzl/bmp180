@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// The following calculations are based on a paper hosted on:
-// http://wmrx00.sourceforge.net/Arduino/BMP085-Calcs.pdf
+// The following calculations are based on a paper hosted here:
+// http://www.osengr.org/WxShield/Downloads/BMP085-Calcs.pdf
 
-package sensor
+package bmp180
 
 import (
 	"math"
