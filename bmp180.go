@@ -9,7 +9,6 @@ package bmp180
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"time"
 )
 
