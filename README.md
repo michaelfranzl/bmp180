@@ -1,10 +1,8 @@
 # bmp180
 
-Golang package for interfacing with BMP180 environmental sensor.
+Golang package for reading environmental data from a BMP180 environmental I2C sensor.
 
 [![Build Status](https://travis-ci.org/michaelfranzl/bmp180.svg?branch=master)](https://travis-ci.org/michaelfranzl/bmp180)
-
-Package `bmp180` provides an interface to the BMP180 family of environmental (temperature, pressure) sensors attached to an I2C interface.
 
 Package `stub` provides an emulated BMP180 device that can be used to test functionality of the `bmp180` package when no I2C bus or physical device is attached or available.
 
