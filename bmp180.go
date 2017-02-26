@@ -9,6 +9,7 @@ package bmp180
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"time"
 )
 
@@ -23,6 +24,7 @@ type Device interface {
 }
 
 const (
+	regID               = 0xD0
 	regControl          = 0xF4
 	regTempOrPressure   = 0xF6
 	cmdReadTemp         = 0x2E
@@ -70,7 +72,7 @@ func NewSensor(device Device) *Sensor {
 // always returns 0x55. This function can be used to test basic communication.
 func (s *Sensor) ID() (byte, error) {
 	buf := make([]byte, 1, 1)
-	err := s.dev.ReadReg(0xD0, buf)
+	err := s.dev.ReadReg(regID, buf)
 	if err != nil {
 		return 0, err
 	}
@@ -126,35 +128,66 @@ func readRawTemp(s *Sensor) (uint16, error) {
 }
 
 func readRawPressure(s *Sensor, oss uint8) (msb byte, lsb byte, xlsb byte, err error) {
+
 	var cmd byte
 	cmd = cmdReadPressure + (oss << 6)
-	err = s.dev.WriteReg(regControl, []byte{cmd})
+
+	t1 := time.Now()
+	err = s.dev.WriteReg(regControl, []byte{cmd}) // start the measurement
 	if err != nil {
 		return
 	}
+	accessDuration := time.Since(t1)
+
+	// Testing a real sensor with I2C bus clock of 100kHz on a Raspberry PI 2 shows that
+	// ReadReg blocks about 9ms (Linux bus access) + 2ms per transmitted word.
+	// Thus, we minimize calls to ReadReg and read as many bytes as possible at once.
+
+	// fmt.Printf("WRITE TIME %v\n", accessDuration)
+
+	buf := make([]byte, 5) // storage for registers 0xF4..0xF8
 
 	var delay time.Duration
+	// typical measurement times from Bosch BMP180 datasheet
 	switch oss {
 	case 0:
-		delay = 5
+		delay = 4500
 	case 1:
-		delay = 8
+		delay = 7500
 	case 2:
-		delay = 14
+		delay = 13500
 	case 3:
-		delay = 26
+		delay = 25500
 	}
 
-	time.Sleep(delay * time.Millisecond)
+	// We sleep for the suggested measurement time minus the bus access time which acts as an 'implicit sleep'
+	time.Sleep(delay*time.Microsecond - accessDuration)
 
-	buf := make([]byte, 3, 3)
-	err = s.dev.ReadReg(regTempOrPressure, buf)
+	//t2 := time.Now() // debug
+
+	err = s.dev.ReadReg(regControl, buf) // read registers 0xF4..0xF8 (9ms + 5 * 2ms = 19ms)
 	if err != nil {
 		return
 	}
-	msb = buf[0]
-	lsb = buf[1]
-	xlsb = buf[2]
+
+	// The chip will change the control register 0xF4 when measurement is done. We poll for this.
+	// Because we slept for the suggested time, this loop should not run, but it is here
+	// in case there is an unexpected delay in the conversion.
+	for buf[0]&0x20 > 0 {
+		// wait for SCO bit to be cleared
+		//fmt.Printf("LOOP %v %b\n", time.Since(t1), buf[0])
+		err = s.dev.ReadReg(regControl, buf) // read registers 0xF4..0xF8 (9ms + 5 * 2ms = 19ms)
+		if err != nil {
+			return
+		}
+	}
+
+	// At this point, measurement is guaranteed to be completed
+	//fmt.Printf("DONE %v\n", time.Since(t2)) // debug
+
+	msb = buf[2]  // register 0xF6
+	lsb = buf[3]  // register 0xF7
+	xlsb = buf[4] // register 0xF8
 	return
 }
 
