@@ -6,7 +6,7 @@ Golang package for reading environmental data from a BMP180 environmental I2C se
 
 Package `stub` provides an emulated BMP180 device that can be used to test functionality of the `bmp180` package when no I2C bus or physical device is attached or available.
 
-Pressure and temperature calculations are based on a paper called ["Bosch BMP085 Barometer Floating Point Pressure Calculations"](http://www.osengr.org/WxShield/Downloads/BMP085-Calcs.pdf).
+Pressure and temperature calculations are based on a paper called ["BOSCH BMP180 Digital pressure sensor"](https://cdn-shop.adafruit.com/datasheets/BST-BMP180-DS000-09.pdf).
 
 See `bmp180_test.go` for a working example.
 
