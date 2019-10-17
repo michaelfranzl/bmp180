@@ -38,20 +38,11 @@ type calibration struct {
 	b1, b2, mb, mc, md int16
 }
 
-type constants struct {
-	c5, c6     float64
-	mc, md     float64
-	x0, x1, x2 float64
-	y0, y1, y2 float64
-	p0, p1, p2 float64
-}
-
 // Sensor is a struct which holds methods and data to communmicate with a
 // BMP180 environmental sensor.
 type Sensor struct {
 	dev         Device      // the I2C communication device
 	calib       calibration // parsed calibration data
-	cnsts       constants   // unchanging constants calculated from calibration data
 	tempCelsius float64     // the latest measured temperature
 }
 
@@ -63,7 +54,6 @@ func NewSensor(device Device) *Sensor {
 	s.dev = device
 
 	readCalibration(s)
-	s.cnsts = calcConstants(s.calib)
 	return s
 }
 
@@ -87,7 +77,7 @@ func (s *Sensor) Temperature() (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	t := calcTempCelsius(tu, s.cnsts)
+	t := calcTempCelsius(tu, s.calib)
 	s.tempCelsius = t
 	return t, nil
 }
@@ -96,11 +86,12 @@ func (s *Sensor) Temperature() (float64, error) {
 // From this it then calculates a real pressure in millibars based on the
 // previously read temperature and calibration data and returns that pressure.
 func (s *Sensor) Pressure(oss uint8) (float64, error) {
+	tu, err := readRawTemp(s)
 	msb, lsb, xlsb, err := readRawPressure(s, oss)
 	if err != nil {
 		return 0, err
 	}
-	return calcPressurePascal(s.tempCelsius, msb, lsb, xlsb, s.cnsts), nil
+	return calcPressurePascal(tu, s.tempCelsius, msb, lsb, xlsb, oss, s.calib), nil
 }
 
 // PressureSealevel does the same as Pressure, but calculates and returns the
@@ -116,7 +107,7 @@ func (s *Sensor) PressureSealevel(oss uint8, altitudeMeters float64) (float64, e
 func readRawTemp(s *Sensor) (uint16, error) {
 	err := s.dev.WriteReg(regControl, []byte{cmdReadTemp})
 
-	time.Sleep(5 * time.Millisecond)
+	time.Sleep(4500 * time.Microsecond)
 
 	buf := make([]byte, 2, 2)
 	err = s.dev.ReadReg(regTempOrPressure, buf)
